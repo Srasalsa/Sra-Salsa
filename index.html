@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Señora Salsa — Pedidos</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f0; min-height: 100vh; }
+.hidden { display: none !important; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.15s; }
+.btn-primary { background: #B85C2A; color: #fff; }
+.btn-primary:hover { background: #9e4e22; }
+.btn-secondary { background: #fff; color: #1a1a18; border: 1px solid #ccc; }
+.btn-secondary:hover { background: #f0ede8; }
+.btn-success { background: #1D9E75; color: #fff; }
+.btn-success:hover { background: #166b52; }
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.badge-pending { background: #FAEEDA; color: #633806; }
+.badge-ready { background: #EAF3DE; color: #27500A; }
+.badge-delivered { background: #E1F5EE; color: #085041; }
+.app-header { background: #1a1208; color: #f5e8c0; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.app-logo { display: flex; align-items: center; gap: 10px; }
+.app-logo .logo-icon { width: 36px; height: 36px; background: #B85C2A; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.app-logo h1 { font-size: 18px; font-weight: 500; }
+.app-logo p { font-size: 11px; color: #c9b280; }
+.nav-tabs { display: flex; gap: 4px; }
+.nav-tab { padding: 6px 14px; border-radius: 6px; border: none; background: transparent; color: #c9b280; font-size: 13px; cursor: pointer; transition: all 0.15s; }
+.nav-tab.active { background: #B85C2A; color: #fff; }
+.nav-tab:hover:not(.active) { background: rgba(255,255,255,0.08); color: #f5e8c0; }
+.view { display: none; padding: 20px; max-width: 780px; margin: 0 auto; }
+.view.active { display: block; }
+.closed-banner { background: #1a1208; color: #f5e8c0; padding: 30px; text-align: center; border-radius: 12px; margin-bottom: 20px; }
+.closed-banner h2 { font-size: 22px; margin-bottom: 8px; }
+.closed-banner p { color: #c9b280; font-size: 14px; }
+.section-card { background: #fff; border: 1px solid #e0ddd6; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.section-title { font-size: 13px; font-weight: 500; color: #666; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px; }
+.product-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0ddd6; }
+.product-row:last-child { border-bottom: none; }
+.product-info { flex: 1; }
+.product-name { font-size: 14px; font-weight: 500; color: #1a1a18; }
+.product-price { font-size: 13px; color: #666; }
+.qty-control { display: flex; align-items: center; gap: 10px; }
+.qty-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ccc; background: #f5f5f0; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; line-height: 1; }
+.qty-btn:hover { background: #B85C2A; color: #fff; border-color: #B85C2A; }
+.qty-value { font-size: 16px; font-weight: 500; min-width: 24px; text-align: center; color: #1a1a18; }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 13px; color: #666; margin-bottom: 6px; display: block; }
+.form-input { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; background: #fff; color: #1a1a18; outline: none; transition: border-color 0.15s; }
+.form-input:focus { border-color: #B85C2A; }
+.radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+.radio-opt { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid #e0ddd6; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 14px; color: #1a1a18; }
+.radio-opt.selected { border-color: #B85C2A; background: #fdf4ee; color: #B85C2A; font-weight: 500; }
+.order-total { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid #ccc; margin-top: 8px; }
+.order-total-label { font-size: 14px; color: #666; }
+.order-total-value { font-size: 22px; font-weight: 500; color: #B85C2A; }
+.success-card { background: #fff; border: 1px solid #e0ddd6; border-radius: 12px; padding: 28px; text-align: center; }
+.success-icon { width: 60px; height: 60px; background: #EAF3DE; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 28px; }
+.order-number { font-size: 30px; font-weight: 500; color: #B85C2A; margin: 8px 0; letter-spacing: 1px; }
+.order-time-box { background: #fdf4ee; border: 1px solid #f0c9a8; border-radius: 8px; padding: 14px; margin: 16px 0; }
+.order-time-box p { font-size: 13px; color: #666; }
+.time-big { font-size: 22px; font-weight: 500; color: #B85C2A; margin: 4px 0; }
+.summary-table { width: 100%; text-align: left; font-size: 13px; margin-top: 16px; border-collapse: collapse; }
+.summary-table td { padding: 5px 0; color: #1a1a18; }
+.summary-table td:last-child { text-align: right; color: #666; }
+.admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.metric-card { background: #fff; border: 1px solid #e0ddd6; border-radius: 12px; padding: 16px; }
+.metric-label { font-size: 12px; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.metric-value { font-size: 26px; font-weight: 500; color: #1a1a18; }
+.config-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #e0ddd6; gap: 12px; }
+.config-row:last-child { border-bottom: none; }
+.toggle { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: #ccc; border-radius: 13px; cursor: pointer; transition: 0.3s; }
+.toggle-slider:before { content: ''; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.3s; }
+.toggle input:checked + .toggle-slider { background: #B85C2A; }
+.toggle input:checked + .toggle-slider:before { transform: translateX(18px); }
+.orders-list { display: flex; flex-direction: column; gap: 12px; }
+.order-card { background: #fff; border: 1px solid #e0ddd6; border-radius: 12px; padding: 16px; }
+.order-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
+.order-card-num { font-size: 15px; font-weight: 500; color: #1a1a18; }
+.order-card-meta { font-size: 12px; color: #666; margin-top: 2px; }
+.order-detail-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: #1a1a18; }
+.order-detail-row span:last-child { color: #666; }
+.order-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.order-actions .btn { padding: 7px 14px; font-size: 13px; }
+.tabs-inner { display: flex; gap: 4px; margin-bottom: 20px; padding: 4px; background: #f0ede8; border-radius: 10px; }
+.tab-inner { flex: 1; padding: 8px; border-radius: 7px; border: none; background: transparent; font-size: 13px; cursor: pointer; color: #666; transition: all 0.15s; }
+.tab-inner.active { background: #fff; color: #1a1a18; font-weight: 500; }
+.empty-state { text-align: center; padding: 40px 20px; color: #666; font-size: 14px; }
+.link-box { background: #fdf4ee; border: 1px solid #f0c9a8; border-radius: 10px; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.link-box span { font-size: 13px; color: #9e4e22; word-break: break-all; flex: 1; font-family: monospace; }
+.copy-btn { padding: 8px 14px; font-size: 13px; background: #B85C2A; color: #fff; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.client-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e0ddd6; font-size: 13px; gap: 8px; }
+.client-row:last-child { border-bottom: none; }
+.client-name { font-weight: 500; color: #1a1a18; font-size: 14px; }
+.client-meta { color: #666; font-size: 12px; margin-top: 2px; }
+.print-summary { background: #f9f6f0; border: 2px dashed #c9b280; border-radius: 10px; padding: 16px; font-size: 13px; line-height: 1.9; font-family: monospace; white-space: pre-wrap; margin-top: 12px; color: #1a1208; }
+.delivery-tag { display: inline-block; background: #E6F1FB; color: #0C447C; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.form-error { color: #E24B4A; font-size: 13px; text-align: center; margin-top: 10px; min-height: 20px; }
+@media (max-width: 480px) {
+  .app-header { padding: 12px 14px; }
+  .view { padding: 14px; }
+  .nav-tab { padding: 6px 10px; font-size: 12px; }
+  .radio-group { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-logo">
+    <div class="logo-icon">🍗</div>
+    <div>
+      <h1>Señora Salsa</h1>
+      <p>Sistema de pedidos</p>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('pedido',this)">Hacer pedido</button>
+    <button class="nav-tab" onclick="switchView('admin',this)">Panel admin</button>
+  </div>
+</div>
+
+<!-- VISTA CLIENTE -->
+<div id="view-pedido" class="view active">
+
+  <div id="closed-banner" class="closed-banner hidden">
+    <h2>🍗 Servicio no disponible hoy</h2>
+    <p>El servicio de Señora Salsa solo está disponible los sábados que la cocina esté abierta.<br>¡Pronto abrimos de nuevo!</p>
+  </div>
+
+  <div id="order-form">
+    <div class="section-card">
+      <p class="section-title">Pan con gallina — elige tus piezas</p>
+      <div class="product-row">
+        <div class="product-info">
+          <div class="product-name">🍗 Pechuga</div>
+          <div class="product-price" id="price-label-main"></div>
+        </div>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty('pechuga',-1)">−</button>
+          <span class="qty-value" id="qty-pechuga">0</span>
+          <button class="qty-btn" onclick="changeQty('pechuga',1)">+</button>
+        </div>
+      </div>
+      <div class="product-row">
+        <div class="product-info"><div class="product-name">🦵 Pierna</div></div>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty('pierna',-1)">−</button>
+          <span class="qty-value" id="qty-pierna">0</span>
+          <button class="qty-btn" onclick="changeQty('pierna',1)">+</button>
+        </div>
+      </div>
+      <div class="product-row">
+        <div class="product-info"><div class="product-name">🍖 Ala</div></div>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty('ala',-1)">−</button>
+          <span class="qty-value" id="qty-ala">0</span>
+          <button class="qty-btn" onclick="changeQty('ala',1)">+</button>
+        </div>
+      </div>
+      <div class="product-row">
+        <div class="product-info"><div class="product-name">🍗 Entrepierna</div></div>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty('entrepierna',-1)">−</button>
+          <span class="qty-value" id="qty-entrepierna">0</span>
+          <button class="qty-btn" onclick="changeQty('entrepierna',1)">+</button>
+        </div>
+      </div>
+      <div class="product-row">
+        <div class="product-info"><div class="product-name">🥩 Carne sin hueso</div></div>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty('carne-sin-hueso',-1)">−</button>
+          <span class="qty-value" id="qty-carne-sin-hueso">0</span>
+          <button class="qty-btn" onclick="changeQty('carne-sin-hueso',1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <p class="section-title">Extras (opcional)</p>
+      <div class="product-row">
+        <div class="product-info">
+          <div class="product-name">🌶️ Salsa</div>
+          <div class="product-price">$2.50 c/u</div>
+        </div>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty('salsa',-1)">−</button>
+          <span class="qty-value" id="qty-salsa">0</span>
+          <button class="qty-btn" onclick="changeQty('salsa',1)">+</button>
+        </div>
+      </div>
+      <div class="product-row">
+        <div class="product-info">
+          <div class="product-name">🍶 Mayonesa</div>
+          <div class="product-price">$2.00 c/u</div>
+        </div>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty('mayonesa',-1)">−</button>
+          <span class="qty-value" id="qty-mayonesa">0</span>
+          <button class="qty-btn" onclick="changeQty('mayonesa',1)">+</button>
+        </div>
+      </div>
+      <div class="product-row">
+        <div class="product-info">
+          <div class="product-name">🌿 Jalapeño</div>
+          <div class="product-price">$1.50 c/u</div>
+        </div>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty('jalapeño',-1)">−</button>
+          <span class="qty-value" id="qty-jalapeño">0</span>
+          <button class="qty-btn" onclick="changeQty('jalapeño',1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <p class="section-title">Resumen</p>
+      <div class="order-total">
+        <span class="order-total-label">Total estimado</span>
+        <span class="order-total-value" id="total-display">$0.00</span>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <p class="section-title">Tus datos</p>
+      <div class="form-group">
+        <label class="form-label">Nombre completo *</label>
+        <input type="text" class="form-input" id="cliente-nombre" placeholder="Tu nombre completo">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Teléfono *</label>
+        <input type="tel" class="form-input" id="cliente-tel" placeholder="7XXX-XXXX">
+      </div>
+      <div class="form-group">
+        <label class="form-label">¿Cómo recibirás tu pedido? *</label>
+        <div class="radio-group">
+          <div class="radio-opt selected" id="opt-recoger" onclick="selectEntrega('recoger')">🏠 Pasar a recoger</div>
+          <div class="radio-opt" id="opt-delivery" onclick="selectEntrega('delivery')">🛵 Delivery</div>
+        </div>
+      </div>
+      <div id="direccion-field" class="form-group hidden">
+        <label class="form-label">Dirección de entrega *</label>
+        <input type="text" class="form-input" id="cliente-dir" placeholder="Colonia, calle, casa o referencia">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Forma de pago *</label>
+        <div class="radio-group">
+          <div class="radio-opt selected" id="opt-efectivo" onclick="selectPago('efectivo')">💵 Efectivo</div>
+          <div class="radio-opt" id="opt-transferencia" onclick="selectPago('transferencia')">📱 Transferencia</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding-bottom: 40px;">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:15px;font-size:16px;" onclick="submitOrder()">
+        ✅ Confirmar pedido
+      </button>
+      <p class="form-error" id="form-error"></p>
+    </div>
+  </div>
+
+  <!-- PANTALLA DE ÉXITO -->
+  <div id="order-success" class="hidden">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <p style="color:#666;font-size:13px;">Tu número de pedido</p>
+      <div class="order-number" id="success-num"></div>
+      <p id="success-name" style="font-size:16px;font-weight:500;margin-bottom:4px;color:#1a1a18;"></p>
+      <div class="order-time-box">
+        <p>Hora estimada</p>
+        <div class="time-big" id="success-time"></div>
+        <p id="success-type" style="margin-top:4px;font-size:13px;color:#666;"></p>
+      </div>
+      <table class="summary-table" id="success-summary"></table>
+      <div style="background:#fdf4ee;border:1px solid #f0c9a8;border-radius:8px;padding:12px;margin-top:14px;font-size:13px;color:#9e4e22;">
+        <strong>Pago:</strong> <span id="success-pago"></span>
+      </div>
+      <p style="font-size:12px;color:#666;margin-top:16px;">En breve te contactamos por WhatsApp para confirmar tu pedido.</p>
+      <button class="btn btn-secondary" style="margin-top:16px;width:100%;justify-content:center;" onclick="newOrder()">Hacer otro pedido</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- VISTA ADMIN -->
+<div id="view-admin" class="view">
+
+  <div class="link-box">
+    <span id="public-link">Cargando enlace...</span>
+    <button class="copy-btn" onclick="copyLink()">📋 Copiar link</button>
+  </div>
+
+  <div class="tabs-inner">
+    <button class="tab-inner active" onclick="switchAdminTab('pedidos',this)">Pedidos de hoy</button>
+    <button class="tab-inner" onclick="switchAdminTab('clientes',this)">Clientes</button>
+    <button class="tab-inner" onclick="switchAdminTab('config',this)">Configuración</button>
+  </div>
+
+  <div id="atab-pedidos">
+    <div class="admin-grid">
+      <div class="metric-card">
+        <div class="metric-label">Pedidos hoy</div>
+        <div class="metric-value" id="m-total">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Pendientes</div>
+        <div class="metric-value" id="m-pending">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Facturado hoy</div>
+        <div class="metric-value" id="m-revenue">$0</div>
+      </div>
+    </div>
+    <div class="orders-list" id="orders-list">
+      <div class="empty-state">No hay pedidos aún hoy.</div>
+    </div>
+  </div>
+
+  <div id="atab-clientes" class="hidden">
+    <div class="section-card">
+      <p class="section-title">Base de clientes</p>
+      <div id="clients-list"><div class="empty-state">Aún no hay clientes registrados.</div></div>
+    </div>
+  </div>
+
+  <div id="atab-config" class="hidden">
+    <div class="section-card">
+      <p class="section-title">Control del servicio</p>
+      <div class="config-row">
+        <div>
+          <div style="font-size:14px;font-weight:500;color:#1a1a18;">Servicio abierto este sábado</div>
+          <div style="font-size:12px;color:#666;">Activa para recibir pedidos</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-open" onchange="saveConfig()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="config-row">
+        <div>
+          <div style="font-size:14px;font-weight:500;color:#1a1a18;">Hora de inicio</div>
+          <div style="font-size:12px;color:#666;">Primer turno disponible</div>
+        </div>
+        <input type="time" class="form-input" id="hora-inicio" value="08:00" style="width:120px;" onchange="saveConfig()">
+      </div>
+      <div class="config-row">
+        <div>
+          <div style="font-size:14px;font-weight:500;color:#1a1a18;">Precio por pieza ($)</div>
+          <div style="font-size:12px;color:#666;">Pechuga, pierna, ala, entrepierna, c/s hueso</div>
+        </div>
+        <input type="number" class="form-input" id="config-precio" value="5.00" style="width:90px;" step="0.50" min="0" onchange="saveConfig()">
+      </div>
+    </div>
+    <div class="section-card">
+      <p class="section-title">Reiniciar pedidos del día</p>
+      <p style="font-size:13px;color:#666;margin-bottom:14px;">Borra solo los pedidos de hoy. Los clientes quedan guardados. Úsalo al inicio de cada sábado.</p>
+      <button class="btn btn-secondary" onclick="resetOrders()">🗑️ Limpiar pedidos de hoy</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const PRODUCTS = {
+  pechuga:          { name: 'Pechuga',        isMain: true },
+  pierna:           { name: 'Pierna',         isMain: true },
+  ala:              { name: 'Ala',            isMain: true },
+  entrepierna:      { name: 'Entrepierna',    isMain: true },
+  'carne-sin-hueso':{ name: 'Carne sin hueso',isMain: true },
+  salsa:            { name: 'Salsa',          isMain: false, price: 2.50 },
+  mayonesa:         { name: 'Mayonesa',       isMain: false, price: 2.00 },
+  'jalapeño':       { name: 'Jalapeño',       isMain: false, price: 1.50 }
+};
+
+let state = {
+  qty: { pechuga:0, pierna:0, ala:0, entrepierna:0, 'carne-sin-hueso':0, salsa:0, mayonesa:0, 'jalapeño':0 },
+  entrega: 'recoger',
+  pago: 'efectivo'
+};
+
+let config = { open: false, startTime: '08:00', precioUnitario: 5.00 };
+let orders = [];
+let clients = {};
+
+// STORAGE
+function saveAll() {
+  try { localStorage.setItem('ss_orders', JSON.stringify(orders)); } catch(e){}
+  try { localStorage.setItem('ss_clients', JSON.stringify(clients)); } catch(e){}
+  try { localStorage.setItem('ss_config', JSON.stringify(config)); } catch(e){}
+}
+
+function loadAll() {
+  try { const d = localStorage.getItem('ss_orders'); if(d) orders = JSON.parse(d); } catch(e){}
+  try { const d = localStorage.getItem('ss_clients'); if(d) clients = JSON.parse(d); } catch(e){}
+  try { const d = localStorage.getItem('ss_config'); if(d) config = JSON.parse(d); } catch(e){}
+}
+
+// CONFIG
+function saveConfig() {
+  config.open = document.getElementById('toggle-open').checked;
+  config.startTime = document.getElementById('hora-inicio').value;
+  config.precioUnitario = parseFloat(document.getElementById('config-precio').value) || 5;
+  saveAll();
+  applyConfig();
+}
+
+function applyConfig() {
+  document.getElementById('toggle-open').checked = config.open;
+  document.getElementById('hora-inicio').value = config.startTime;
+  document.getElementById('config-precio').value = config.precioUnitario.toFixed(2);
+  const label = document.getElementById('price-label-main');
+  if(label) label.textContent = '$' + config.precioUnitario.toFixed(2) + ' c/u';
+  checkServiceStatus();
+}
+
+function checkServiceStatus() {
+  const banner = document.getElementById('closed-banner');
+  const form = document.getElementById('order-form');
+  if (!config.open) {
+    banner.classList.remove('hidden');
+    form.classList.add('hidden');
+  } else {
+    banner.classList.add('hidden');
+    form.classList.remove('hidden');
+  }
+}
+
+// NAVIGATION
+function switchView(v, btn) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+  if (v === 'admin') renderAdmin();
+}
+
+function switchAdminTab(tab, btn) {
+  document.querySelectorAll('[id^="atab-"]').forEach(el => el.classList.add('hidden'));
+  document.getElementById('atab-' + tab).classList.remove('hidden');
+  document.querySelectorAll('.tab-inner').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+  if (tab === 'pedidos') renderOrders();
+  if (tab === 'clientes') renderClients();
+}
+
+// ORDER FORM
+function changeQty(product, delta) {
+  state.qty[product] = Math.max(0, (state.qty[product] || 0) + delta);
+  document.getElementById('qty-' + product).textContent = state.qty[product];
+  updateTotal();
+}
+
+function updateTotal() {
+  let total = 0;
+  for (const [key, val] of Object.entries(state.qty)) {
+    if (val > 0) {
+      const p = PRODUCTS[key];
+      total += val * (p.isMain ? config.precioUnitario : p.price);
+    }
+  }
+  document.getElementById('total-display').textContent = '$' + total.toFixed(2);
+}
+
+function selectEntrega(type) {
+  state.entrega = type;
+  ['recoger','delivery'].forEach(t => {
+    document.getElementById('opt-' + t).classList.toggle('selected', t === type);
+  });
+  document.getElementById('direccion-field').classList.toggle('hidden', type !== 'delivery');
+}
+
+function selectPago(type) {
+  state.pago = type;
+  ['efectivo','transferencia'].forEach(t => {
+    document.getElementById('opt-' + t).classList.toggle('selected', t === type);
+  });
+}
+
+// ORDER LOGIC
+function todayStr() {
+  return new Date().toISOString().slice(0,10).replace(/-/g,'');
+}
+
+function calcEstimatedTime(index) {
+  const [h, m] = config.startTime.split(':').map(Number);
+  const t = new Date();
+  t.setHours(h, m + index * 5, 0, 0);
+  return t.toLocaleTimeString('es-SV', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+function genOrderNum() {
+  const today = todayStr();
+  const seq = (orders.filter(o => o.date === today).length + 1).toString().padStart(3,'0');
+  return 'SS-' + today + '-' + seq;
+}
+
+function submitOrder() {
+  const nombre = document.getElementById('cliente-nombre').value.trim();
+  const tel    = document.getElementById('cliente-tel').value.trim();
+  const dir    = document.getElementById('cliente-dir').value.trim();
+  const errEl  = document.getElementById('form-error');
+
+  const hasItems = Object.values(state.qty).some(v => v > 0);
+  if (!hasItems)                              { errEl.textContent = '⚠️ Agrega al menos un producto.'; return; }
+  if (!nombre)                                { errEl.textContent = '⚠️ Ingresa tu nombre.'; return; }
+  if (!tel)                                   { errEl.textContent = '⚠️ Ingresa tu teléfono.'; return; }
+  if (state.entrega === 'delivery' && !dir)   { errEl.textContent = '⚠️ Ingresa tu dirección de entrega.'; return; }
+  errEl.textContent = '';
+
+  const today = todayStr();
+  const todayCount = orders.filter(o => o.date === today).length;
+
+  let total = 0;
+  const items = [];
+  for (const [key, val] of Object.entries(state.qty)) {
+    if (val > 0) {
+      const p = PRODUCTS[key];
+      const price = p.isMain ? config.precioUnitario : p.price;
+      total += val * price;
+      items.push({ key, name: p.name, qty: val, price });
+    }
+  }
+
+  const order = {
+    num: genOrderNum(),
+    date: today,
+    nombre, tel,
+    entrega: state.entrega,
+    direccion: dir,
+    pago: state.pago,
+    items, total,
+    estimatedTime: calcEstimatedTime(todayCount),
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+
+  orders.push(order);
+
+  // Guardar cliente
+  if (!clients[tel]) {
+    clients[tel] = { nombre, tel, orders: [], firstDate: today };
+  }
+  clients[tel].orders.push({ num: order.num, date: today, total, items: items.map(i => i.name) });
+  clients[tel].lastDate = today;
+  clients[tel].nombre = nombre;
+
+  saveAll();
+  showSuccess(order);
+}
+
+function showSuccess(order) {
+  document.getElementById('success-num').textContent = order.num;
+  document.getElementById('success-name').textContent = '¡Gracias, ' + order.nombre + '!';
+  document.getElementById('success-time').textContent = order.estimatedTime;
+  document.getElementById('success-type').textContent =
+    order.entrega === 'delivery' ? '🛵 Delivery → ' + order.direccion : '🏠 Pasas a recoger';
+  document.getElementById('success-pago').textContent =
+    (order.pago === 'efectivo' ? '💵 Efectivo' : '📱 Transferencia') + ' — $' + order.total.toFixed(2);
+
+  let html = '';
+  order.items.forEach(i => {
+    html += `<tr><td>${i.qty}x ${i.name}</td><td>$${(i.qty * i.price).toFixed(2)}</td></tr>`;
+  });
+  html += `<tr><td colspan="2" style="padding:6px 0;"><hr style="border:none;border-top:1px solid #e0ddd6;"></td></tr>`;
+  html += `<tr><td><strong>Total</strong></td><td><strong>$${order.total.toFixed(2)}</strong></td></tr>`;
+  document.getElementById('success-summary').innerHTML = html;
+
+  document.getElementById('order-form').classList.add('hidden');
+  document.getElementById('order-success').classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+
+function newOrder() {
+  Object.keys(state.qty).forEach(k => {
+    state.qty[k] = 0;
+    const el = document.getElementById('qty-' + k);
+    if (el) el.textContent = '0';
+  });
+  state.entrega = 'recoger';
+  state.pago = 'efectivo';
+  ['cliente-nombre','cliente-tel','cliente-dir'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  updateTotal();
+  selectEntrega('recoger');
+  selectPago('efectivo');
+  document.getElementById('order-form').classList.remove('hidden');
+  document.getElementById('order-success').classList.add('hidden');
+  window.scrollTo(0,0);
+}
+
+// ADMIN
+function renderAdmin() {
+  applyConfig();
+  renderOrders();
+  document.getElementById('public-link').textContent = window.location.href;
+}
+
+function generateDeliverySummary(o) {
+  const lines = [
+    '═══════════════════════════',
+    '   SEÑORA SALSA — PEDIDO',
+    '═══════════════════════════',
+    '# ' + o.num,
+    'Hora estimada: ' + o.estimatedTime,
+    '',
+    'CLIENTE: ' + o.nombre,
+    'TEL: ' + o.tel,
+    'ENTREGA: ' + (o.entrega === 'delivery' ? 'Delivery' : 'Pasa a recoger'),
+    o.entrega === 'delivery' ? 'DIRECCIÓN: ' + o.direccion : null,
+    'PAGO: ' + o.pago,
+    '',
+    'PEDIDO:',
+    ...o.items.map(i => '  ' + i.qty + 'x ' + i.name),
+    '',
+    'TOTAL: $' + o.total.toFixed(2),
+    '═══════════════════════════'
+  ].filter(l => l !== null).join('\n');
+  return lines;
+}
+
+function renderOrders() {
+  const today = todayStr();
+  const todayOrders = orders.filter(o => o.date === today);
+
+  document.getElementById('m-total').textContent = todayOrders.length;
+  document.getElementById('m-pending').textContent = todayOrders.filter(o => o.status === 'pending').length;
+  document.getElementById('m-revenue').textContent = '$' + todayOrders.reduce((s,o) => s + o.total, 0).toFixed(2);
+
+  const list = document.getElementById('orders-list');
+  if (!todayOrders.length) {
+    list.innerHTML = '<div class="empty-state">No hay pedidos aún hoy.</div>';
+    return;
+  }
+
+  list.innerHTML = [...todayOrders].reverse().map(o => {
+    const statusLabel = o.status === 'pending' ? 'Pendiente' : o.status === 'ready' ? 'Listo' : 'Entregado';
+    const statusClass = o.status === 'pending' ? 'badge-pending' : o.status === 'ready' ? 'badge-ready' : 'badge-delivered';
+    return `
+    <div class="order-card">
+      <div class="order-card-header">
+        <div>
+          <div class="order-card-num">${o.num}</div>
+          <div class="order-card-meta">${o.nombre} · ${o.tel}</div>
+        </div>
+        <div style="text-align:right;">
+          <span class="badge ${statusClass}">${statusLabel}</span>
+          <div style="font-size:12px;color:#666;margin-top:4px;">⏰ ${o.estimatedTime}</div>
+        </div>
+      </div>
+      ${o.items.map(i =>
+        `<div class="order-detail-row"><span>${i.qty}x ${i.name}</span><span>$${(i.qty*i.price).toFixed(2)}</span></div>`
+      ).join('')}
+      <div class="order-detail-row" style="font-weight:500;border-top:1px solid #e0ddd6;margin-top:8px;padding-top:8px;">
+        <span>Total</span><span>$${o.total.toFixed(2)}</span>
+      </div>
+      <div style="margin-top:8px;font-size:13px;color:#666;">
+        ${o.entrega === 'delivery'
+          ? `<span class="delivery-tag">🛵 Delivery</span> ${o.direccion}`
+          : '🏠 Pasa a recoger'}
+        · ${o.pago}
+      </div>
+      <div class="order-actions">
+        ${o.status === 'pending' ? `<button class="btn btn-success" onclick="updateStatus('${o.num}','ready')">✅ Marcar listo</button>` : ''}
+        ${o.status === 'ready'   ? `<button class="btn btn-primary" onclick="updateStatus('${o.num}','delivered')">📦 Entregado</button>` : ''}
+        <button class="btn btn-secondary" onclick="toggleSummary('${o.num}')">🖨️ Resumen delivery</button>
+      </div>
+      <div id="summary-${o.num}" class="print-summary hidden">${generateDeliverySummary(o)}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSummary(num) {
+  document.getElementById('summary-' + num).classList.toggle('hidden');
+}
+
+function updateStatus(num, status) {
+  const o = orders.find(o => o.num === num);
+  if (o) { o.status = status; saveAll(); renderOrders(); }
+}
+
+function renderClients() {
+  const list = document.getElementById('clients-list');
+  const all = Object.values(clients);
+  if (!all.length) {
+    list.innerHTML = '<div class="empty-state">Aún no hay clientes registrados.</div>';
+    return;
+  }
+  const sorted = all.sort((a,b) => (b.orders||[]).length - (a.orders||[]).length);
+  list.innerHTML = sorted.map(c => {
+    const total = (c.orders||[]).reduce((s,o) => s + (o.total||0), 0);
+    const count = (c.orders||[]).length;
+    const lastItems = (c.orders||[]).slice(-1)[0]?.items?.join(', ') || '—';
+    return `
+    <div class="client-row">
+      <div style="flex:1;">
+        <div class="client-name">${c.nombre}</div>
+        <div class="client-meta">📞 ${c.tel}</div>
+        <div class="client-meta">Primer pedido: ${c.firstDate || '—'} · Último: ${c.lastDate || '—'}</div>
+        <div class="client-meta" style="color:#B85C2A;margin-top:2px;">Último pedido: ${lastItems}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:16px;font-weight:500;color:#1a1a18;">${count} pedido${count!==1?'s':''}</div>
+        <div class="client-meta">$${total.toFixed(2)} total</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function resetOrders() {
+  if (!confirm('¿Seguro que quieres borrar los pedidos de hoy? Los clientes quedan guardados.')) return;
+  const today = todayStr();
+  orders = orders.filter(o => o.date !== today);
+  saveAll();
+  renderOrders();
+}
+
+function copyLink() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    const orig = btn.textContent;
+    btn.textContent = '✅ ¡Copiado!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+// INIT
+window.addEventListener('load', () => {
+  loadAll();
+  applyConfig();
+  document.getElementById('public-link').textContent = window.location.href;
+});
+</script>
+</body>
+</html>
